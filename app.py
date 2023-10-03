@@ -3,9 +3,9 @@ import streamlit as st
 import pandas as pd
 
 # Set Streamlit page configuration
-st.set_page_config(page_title="Sales Dashboard",
+st.set_page_config(page_title="MITG Stocks Dashboard",
                    page_icon=":bar_chart:",
-                   layout="wide"
+                   layout="centered"
                    )
 
 # Allow the user to upload an XLSX file
@@ -22,7 +22,7 @@ def get_data_from_excel(file):
         file,
         engine='openpyxl',
         sheet_name='Sheet1',
-        usecols='D, E, J, S'
+        usecols='B, D, E, H, J, S'
     )
     return df_int
 
@@ -36,26 +36,28 @@ if uploaded_file:
         "4000|4006|40A0"
     )]
 
-    # Filter rows where 'ShelfLife%' is greater than or equal to '0' & 'X'
-    # df = df[(df['ShelfLife%'] == 0) | (df['ShelfLife%'] > 60)]
+    # Create a new column with '%' symbol for display
+    df['ShelfLife'] = df['ShelfLife%'].apply(lambda x: f"{x:.2f}%")
 
-    # Format the 'ShelfLife%' column values as percentages with two decimal places
-    df['ShelfLife%'] = df['ShelfLife%'].apply(lambda x: f"{x * 1:.2f}%")
-
-    # Sort the DataFrame by the 'SLoc' column in-place
-    df.sort_values(by='ShelfLife%', inplace=True, ascending=False)
+    # Sort the DataFrame by the 'shelflife' column in-place
+    df.sort_values(by='ShelfLife', inplace=True, ascending=False)
 
     # Filter rows where 'Quantity' is an integer and not equal to 0
     df = df[(df['Quantity'].astype(int) == df['Quantity'])
             & (df['Quantity'] != 0)]
+
+    df['Quantity'] = df['Quantity'].astype(int)
 
     # ---- MAINPAGE ----
     st.title(":bar_chart: Stocks Dashboard")
 
     st.markdown("##")
 
-    st.caption(
-        ':red[Only showing _SLoc_]:  :green[4000 | 4006 | 40A0]')
+    st.caption('''
+        *Only showing _SLoc_: 4000 | 4006 | 40A0
+
+        *MOH Shelflife invoicing requirement: >= 70%
+        ''')
 
     st.markdown("##")
 
@@ -68,21 +70,56 @@ if uploaded_file:
 
     filtered_df = df[df['CFN'] == cfn]
 
-    total_qty = filtered_df.loc[df['SLoc'] !=
+    # Filter MOH rows where 'ShelfLife%' is greater than or equal to 70%
+    filtered_df_moh = df[(df['CFN'] == cfn) & (df['ShelfLife%'] >= 70)]
+
+    # Total Qty ALL
+    total_qty = filtered_df.loc[filtered_df['SLoc'] !=
                                 '40A0', 'Quantity'].sum().astype(int)
-    total_qty_ea = filtered_df.loc[df['SLoc']
+    total_qty_ea = filtered_df.loc[filtered_df['SLoc']
                                    == '40A0', 'Quantity'].sum().astype(int)
 
-    cpad1, col, pad2 = st.columns((10, 10, 10))
+    # Total Qty MOH
+    total_qty_moh = filtered_df_moh.loc[filtered_df_moh['SLoc'] !=
+                                        '40A0', 'Quantity'].sum().astype(int)
+    total_qty_ea_moh = filtered_df_moh.loc[filtered_df_moh['SLoc']
+                                           == '40A0', 'Quantity'].sum().astype(int)
+
+    cpad1, pad2 = st.columns((20, 15))
     with cpad1:
         st.subheader("Total Quantity:")
         st.subheader(f"Box: {total_qty}")
         st.subheader(f"EA: {total_qty_ea}")
 
+    with pad2:
+        st.subheader("Total Quantity (MOH):")
+        st.subheader(f"Box: {total_qty_moh}")
+        st.subheader(f"EA: {total_qty_ea_moh}")
+
     st.markdown("""---""")
 
-    st.dataframe(
-        filtered_df,
-        use_container_width=True,
-        hide_index=True
+    TABLE_WIDTH = "100%"
+
+    # Centering the table and adjusting its width with CSS
+    st.write(
+        f"""
+        <style>
+        .my-table {{
+            margin: 0 auto;
+            text-align: center;
+            width: {TABLE_WIDTH};
+            color: WhiteSmoke;
+        }}
+        .my-table th {{
+            text-align: center;
+            color: Peru;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+    st.write(
+        pd.DataFrame(filtered_df[['Plant Name', 'SLoc', 'Quantity', 'Batch', 'ShelfLife']]).to_html(
+            classes=["my-table"], index=False),
+        unsafe_allow_html=True
     )
