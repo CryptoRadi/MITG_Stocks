@@ -22,7 +22,7 @@ def get_data_from_excel(file):
         file,
         engine='openpyxl',
         sheet_name='Sheet1',
-        usecols='B, D, E, H, J, S'
+        usecols='B, D, E, H, J, S, N, Q'
     )
     return df_int
 
@@ -30,7 +30,7 @@ def get_data_from_excel(file):
 if uploaded_file:
     df = get_data_from_excel(uploaded_file)
 
-    df = df.rename(columns={'Tot stk un': 'Quantity'})
+    df = df.rename(columns={'Tot stk un': 'Quantity', 'Num': 'BOX of'})
 
     df = df[df["SLoc"].str.contains(
         "4000|4006|40A0"
@@ -119,7 +119,7 @@ if uploaded_file:
         unsafe_allow_html=True
     )
     st.write(
-        pd.DataFrame(filtered_df[['Plant Name', 'SLoc', 'Quantity', 'Batch', 'ShelfLife']]).to_html(
+        pd.DataFrame(filtered_df[['Plant Name', 'SLoc', 'Quantity', 'BOX of', 'Batch', 'ShelfLife', 'Expr Date']]).to_html(
             classes=["my-table"], index=False),
         unsafe_allow_html=True
     )
