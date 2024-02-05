@@ -36,6 +36,9 @@ if uploaded_file:
         "4000|4006|40A0"
     )]
 
+    # Convert the datetime column to just date (without time)
+    df['Expr Date'] = pd.to_datetime(df['Expr Date']).dt.date
+
     # Create a new column with '%' symbol for display
     df['ShelfLife'] = df['ShelfLife%'].apply(lambda x: f"{x:.2f}%")
 
