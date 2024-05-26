@@ -21,7 +21,7 @@ def get_data_from_excel(file):
         file,
         engine='openpyxl',
         sheet_name='Sheet1',
-        usecols='B, D, E, H, J, S, N, Q'
+        usecols='B, D, E, F, H, J, S, N, Q'
     )
     return df_int
 
@@ -93,6 +93,10 @@ if uploaded_file:
             total_qty_combined = (total_qty * uom_value) + total_qty_ea
             st.subheader(f"Total QTY: :green[{total_qty_combined}] EA")
 
+            # Retrieve and display the description from column F
+            description = df.loc[df['CFN'] == cfn, 'Mat Desc'].values[0]
+            st.subheader(f"Desc: :blue[{description}]")
+
             st.markdown("""---""")
 
             # Filter MOH rows where 'ShelfLife%' is greater than or equal to 70%
@@ -138,11 +142,11 @@ if uploaded_file:
                 unsafe_allow_html=True
             )
             st.write(
-                pd.DataFrame(filtered_df[['Plant Name', 'SLoc', 'Quantity', 'BOX of', 'Batch', 'ShelfLife', 'Expr Date']]).to_html(
+                pd.DataFrame(filtered_df[['Plant Name', 'SLoc', 'Quantity', 'Batch', 'ShelfLife', 'Expr Date']]).to_html(
                     classes=["my-table"], index=False),
                 unsafe_allow_html=True
             )
         else:
             st.subheader(":green[Select CFN to Start.]")
     else:
-        st.write("No data available in the uploaded file.")
+        st.write(":red[No data available in the uploaded file.]")
