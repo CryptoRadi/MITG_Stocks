@@ -1,4 +1,3 @@
-"""Module providing a function printing python version."""
 import streamlit as st
 import pandas as pd
 
@@ -35,9 +34,7 @@ if uploaded_file:
     # Fill NA/NaN values in 'SLoc' with an empty string or drop them
     df['SLoc'] = df['SLoc'].fillna('')
 
-    df = df[df["SLoc"].str.contains(
-        "4000|4006|40A0"
-    )]
+    df = df[df["SLoc"].str.contains("4000|4006|40A0")]
 
     # Convert the datetime column to just date (without time)
     df['Expr Date'] = pd.to_datetime(df['Expr Date']).dt.date
@@ -67,85 +64,85 @@ if uploaded_file:
 
     st.markdown("##")
 
-    cfn = st.selectbox(
-        "Filter CFN:",
-        options=df['CFN'].unique(),
-        index=None,
-        placeholder="Select CFN..."
-    )
+    if not df.empty:
+        cfn = st.selectbox(
+            "Filter CFN:",
+            options=df['CFN'].unique(),
+            index=None,
+            placeholder="Select CFN..."
+        )
 
-    st.subheader(f"CFN: {cfn}")
+        # st.subheader(f"CFN: {cfn}")
 
-    # Retrieve and display the value from column Q for the selected CFN
-    uom_value = int(df.loc[df['CFN'] == cfn, 'BOX of'].values[0])
-    st.subheader(f"UOM: {uom_value}")
+        # Retrieve and display the value from column Q for the selected CFN without decimals
+        uom_values = df.loc[df['CFN'] == cfn, 'BOX of'].values
+        if len(uom_values) > 0:
+            uom_value = int(uom_values[0])
+            st.subheader(f"UOM: :orange[{uom_value}]")
 
-    filtered_df = df[df['CFN'] == cfn]
+            # Define filtered_df before using it in calculations
+            filtered_df = df[df['CFN'] == cfn]
 
-    # Calculate and display the total quantity
-    total_qty = filtered_df.loc[filtered_df['SLoc']
-                                != '40A0', 'Quantity'].sum().astype(int)
-    total_qty_ea = filtered_df.loc[filtered_df['SLoc']
-                                   == '40A0', 'Quantity'].sum().astype(int)
-
-    # Total QTY: (BOX * uom_value) + EA
-    total_qty_combined = (total_qty * uom_value) + total_qty_ea
-    st.subheader(f"Total QTY: {total_qty_combined} EA")
-
-    st.markdown("""---""")
-
-    # filtered_df = df[df['CFN'] == cfn]
-
-    # Filter MOH rows where 'ShelfLife%' is greater than or equal to 70%
-    filtered_df_moh = df[(df['CFN'] == cfn) & (df['ShelfLife%'] >= 70)]
-
-    # Total Qty ALL
-    total_qty = filtered_df.loc[filtered_df['SLoc'] !=
-                                '40A0', 'Quantity'].sum().astype(int)
-    total_qty_ea = filtered_df.loc[filtered_df['SLoc']
-                                   == '40A0', 'Quantity'].sum().astype(int)
-
-    # Total Qty MOH
-    total_qty_moh = filtered_df_moh.loc[filtered_df_moh['SLoc'] !=
-                                        '40A0', 'Quantity'].sum().astype(int)
-    total_qty_ea_moh = filtered_df_moh.loc[filtered_df_moh['SLoc']
+            # Calculate and display the total quantity
+            total_qty = filtered_df.loc[filtered_df['SLoc']
+                                        != '40A0', 'Quantity'].sum().astype(int)
+            total_qty_ea = filtered_df.loc[filtered_df['SLoc']
                                            == '40A0', 'Quantity'].sum().astype(int)
 
-    cpad1, pad2 = st.columns((20, 15))
-    with cpad1:
-        st.subheader("Total Quantity:")
-        st.subheader(f"Box: {total_qty}")
-        st.subheader(f"EA: {total_qty_ea}")
+            # Total QTY: (BOX * uom_value) + EA
+            total_qty_combined = (total_qty * uom_value) + total_qty_ea
+            st.subheader(f"Total QTY: :green[{total_qty_combined}] EA")
 
-    with pad2:
-        st.subheader("Total Quantity (MOH):")
-        st.subheader(f"Box: {total_qty_moh}")
-        st.subheader(f"EA: {total_qty_ea_moh}")
+            st.markdown("""---""")
 
-    st.markdown("""---""")
+            # Filter MOH rows where 'ShelfLife%' is greater than or equal to 70%
+            filtered_df_moh = df[(df['CFN'] == cfn) & (df['ShelfLife%'] >= 70)]
 
-    TABLE_WIDTH = "100%"
+            # Total Qty ALL
+            total_qty_moh = filtered_df_moh.loc[filtered_df_moh['SLoc'] !=
+                                                '40A0', 'Quantity'].sum().astype(int)
+            total_qty_ea_moh = filtered_df_moh.loc[filtered_df_moh['SLoc']
+                                                   == '40A0', 'Quantity'].sum().astype(int)
 
-    # Centering the table and adjusting its width with CSS
-    st.write(
-        f"""
-        <style>
-        .my-table {{
-            margin: 0 auto;
-            text-align: center;
-            width: {TABLE_WIDTH};
-            color: WhiteSmoke;
-        }}
-        .my-table th {{
-            text-align: center;
-            color: Peru;
-        }}
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
-    st.write(
-        pd.DataFrame(filtered_df[['Plant Name', 'SLoc', 'Quantity', 'Batch', 'ShelfLife', 'Expr Date']]).to_html(
-            classes=["my-table"], index=False),
-        unsafe_allow_html=True
-    )
+            cpad1, pad2 = st.columns((20, 15))
+            with cpad1:
+                st.subheader("Total Quantity:")
+                st.subheader(f"Box: {total_qty}")
+                st.subheader(f"EA: {total_qty_ea}")
+
+            with pad2:
+                st.subheader("Total Quantity (MOH):")
+                st.subheader(f"Box: {total_qty_moh}")
+                st.subheader(f"EA: {total_qty_ea_moh}")
+
+            st.markdown("""---""")
+
+            TABLE_WIDTH = "100%"
+
+            # Centering the table and adjusting its width with CSS
+            st.write(
+                f"""
+                <style>
+                .my-table {{
+                    margin: 0 auto;
+                    text-align: center;
+                    width: {TABLE_WIDTH};
+                    color: WhiteSmoke;
+                }}
+                .my-table th {{
+                    text-align: center;
+                    color: Peru;
+                }}
+                </style>
+                """,
+                unsafe_allow_html=True
+            )
+            st.write(
+                pd.DataFrame(filtered_df[['Plant Name', 'SLoc', 'Quantity', 'BOX of', 'Batch', 'ShelfLife', 'Expr Date']]).to_html(
+                    classes=["my-table"], index=False),
+                unsafe_allow_html=True
+            )
+        else:
+            st.subheader(":green[Select CFN to Start.]")
+    else:
+        st.write("No data available in the uploaded file.")
