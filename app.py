@@ -75,11 +75,26 @@ if uploaded_file:
     )
 
     st.subheader(f"CFN: {cfn}")
-    st.subheader(f"UOM: {'BOX of'}")
+
+    # Retrieve and display the value from column Q for the selected CFN
+    uom_value = int(df.loc[df['CFN'] == cfn, 'BOX of'].values[0])
+    st.subheader(f"UOM: {uom_value}")
+
+    filtered_df = df[df['CFN'] == cfn]
+
+    # Calculate and display the total quantity
+    total_qty = filtered_df.loc[filtered_df['SLoc']
+                                != '40A0', 'Quantity'].sum().astype(int)
+    total_qty_ea = filtered_df.loc[filtered_df['SLoc']
+                                   == '40A0', 'Quantity'].sum().astype(int)
+
+    # Total QTY: (BOX * uom_value) + EA
+    total_qty_combined = (total_qty * uom_value) + total_qty_ea
+    st.subheader(f"Total QTY: {total_qty_combined} EA")
 
     st.markdown("""---""")
 
-    filtered_df = df[df['CFN'] == cfn]
+    # filtered_df = df[df['CFN'] == cfn]
 
     # Filter MOH rows where 'ShelfLife%' is greater than or equal to 70%
     filtered_df_moh = df[(df['CFN'] == cfn) & (df['ShelfLife%'] >= 70)]
@@ -130,7 +145,7 @@ if uploaded_file:
         unsafe_allow_html=True
     )
     st.write(
-        pd.DataFrame(filtered_df[['Plant Name', 'SLoc', 'Quantity', 'BOX of', 'Batch', 'ShelfLife', 'Expr Date']]).to_html(
+        pd.DataFrame(filtered_df[['Plant Name', 'SLoc', 'Quantity', 'Batch', 'ShelfLife', 'Expr Date']]).to_html(
             classes=["my-table"], index=False),
         unsafe_allow_html=True
     )
