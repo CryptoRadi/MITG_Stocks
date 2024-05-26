@@ -32,6 +32,9 @@ if uploaded_file:
 
     df = df.rename(columns={'Tot stk un': 'Quantity', 'Num': 'BOX of'})
 
+    # Fill NA/NaN values in 'SLoc' with an empty string or drop them
+    df['SLoc'] = df['SLoc'].fillna('')
+
     df = df[df["SLoc"].str.contains(
         "4000|4006|40A0"
     )]
@@ -70,6 +73,11 @@ if uploaded_file:
         index=None,
         placeholder="Select CFN..."
     )
+
+    st.subheader(f"CFN: {cfn}")
+    st.subheader(f"UOM: {'BOX of'}")
+
+    st.markdown("""---""")
 
     filtered_df = df[df['CFN'] == cfn]
 
