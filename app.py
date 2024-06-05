@@ -26,6 +26,15 @@ def get_data_from_excel(file):
     return df_int
 
 
+def safe_to_datetime(date_series):
+    """Converts date_series to datetime, handles out-of-bounds dates"""
+    min_date = pd.Timestamp.min
+    max_date = pd.Timestamp.max
+    date_series = pd.to_datetime(date_series, errors='coerce')
+    date_series[(date_series < min_date) | (date_series > max_date)] = pd.NaT
+    return date_series
+
+
 if uploaded_file:
     df = get_data_from_excel(uploaded_file)
 
@@ -37,7 +46,7 @@ if uploaded_file:
     df = df[df["SLoc"].str.contains("4000|4006|40A0")]
 
     # Convert the datetime column to just date (without time)
-    df['Expr Date'] = pd.to_datetime(df['Expr Date']).dt.date
+    df['Expr Date'] = safe_to_datetime(df['Expr Date']).dt.date
 
     # Create a new column with '%' symbol for display
     df['ShelfLife'] = df['ShelfLife%'].apply(lambda x: f"{x:.2f}%")
