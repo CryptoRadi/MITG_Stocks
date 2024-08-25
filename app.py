@@ -66,9 +66,9 @@ if uploaded_file:
     st.markdown("##")
 
     st.caption('''
-        *Only showing _SLoc_: 4000 | 4006 | 40A0
+        :blue[*Only showing _SLoc_: 4000 | 4006 | 40A0]
 
-        *MOH Shelflife invoicing requirement: >= 70%
+        :red[*MOH Shelflife invoicing requirement: >= 70%]
         ''')
 
     st.markdown("##")
@@ -119,12 +119,12 @@ if uploaded_file:
 
             cpad1, pad2 = st.columns((20, 15))
             with cpad1:
-                st.subheader("Total Quantity:")
+                st.subheader("Quantity:")
                 st.subheader(f"Box: {total_qty}")
                 st.subheader(f"EA: {total_qty_ea}")
 
             with pad2:
-                st.subheader("Total Quantity (MOH):")
+                st.subheader("Quantity (MOH):")
                 st.subheader(f"Box: {total_qty_moh}")
                 st.subheader(f"EA: {total_qty_ea_moh}")
 
@@ -151,7 +151,7 @@ if uploaded_file:
                 unsafe_allow_html=True
             )
             st.write(
-                pd.DataFrame(filtered_df[['Plant Name', 'SLoc', 'Quantity', 'Batch', 'ShelfLife', 'Expr Date']]).to_html(
+                pd.DataFrame(filtered_df[['SLoc', 'Quantity', 'Batch', 'ShelfLife', 'Expr Date']]).to_html(
                     classes=["my-table"], index=False),
                 unsafe_allow_html=True
             )
